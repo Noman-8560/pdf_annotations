@@ -24,6 +24,10 @@ export interface Annotation {
   y: number;
   width: number;
   height: number;
+  /** 'rect' or 'pen' */
+  type?: string;
+  /** for pen annotations: JSON stringified array of points [{x,y},...] */
+  path?: string | null;
   page_number: number;
   created_at: string;
 }

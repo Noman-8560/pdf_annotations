@@ -25,7 +25,18 @@ const extractErrorMessage = (error: unknown) => {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { pdf_id, user_id, label, x, y, width, height, page_number } = body;
+    const {
+      pdf_id,
+      user_id,
+      label,
+      x,
+      y,
+      width,
+      height,
+      page_number,
+      type,
+      path,
+    } = body;
 
     if (
       !pdf_id ||
@@ -40,20 +51,40 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // For pen annotations, `path` must be provided (stringified points). For rect, width/height required.
+    if (type === "pen") {
+      if (!path || typeof path !== "string") {
+        return NextResponse.json(
+          { error: "Pen annotations require a path" },
+          { status: 400 },
+        );
+      }
+    } else {
+      if (typeof width !== "number" || typeof height !== "number") {
+        return NextResponse.json(
+          { error: "Rectangle annotations require width and height" },
+          { status: 400 },
+        );
+      }
+    }
+
+    const insertPayload: Record<string, unknown> = {
+      pdf_id,
+      user_id,
+      label,
+      x,
+      y,
+      width: width ?? 0,
+      height: height ?? 0,
+      page_number,
+    };
+
+    if (type) insertPayload.type = type;
+    if (path) insertPayload.path = path;
+
     const { data, error } = await supabaseAdmin
       .from("annotations")
-      .insert([
-        {
-          pdf_id,
-          user_id,
-          label,
-          x,
-          y,
-          width,
-          height,
-          page_number,
-        },
-      ])
+      .insert([insertPayload])
       .select();
 
     if (error) throw error;

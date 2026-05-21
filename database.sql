@@ -25,6 +25,8 @@ CREATE TABLE annotations (
   y FLOAT NOT NULL,
   width FLOAT NOT NULL,
   height FLOAT NOT NULL,
+  type TEXT NOT NULL DEFAULT 'rect',
+  path TEXT,
   page_number INTEGER NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
